@@ -26,8 +26,9 @@ if(simulator == 'sfcsim' or simulator == 'icn-sfcsim'):
         varied_ccr = ccnchanger.ccn_chaner(int(ccr_plotnum))
         ccr_varied = True
         container_num = varied_ccr + 1
-        # print('ccr0: ' + str(varied_ccr[0][0]))
-        # print('datasize0: ' + str(varied_ccr[0][1]))
+        print('ccr5: ' + str(5))
+        print('datasize min: ' + str(varied_ccr[5][1]))
+        print('datasize min: ' + str(varied_ccr[5][2]))
 else:
     container_num = int(input('Number of containers: '))
 
@@ -35,6 +36,8 @@ else:
 ## writing to dockerfile
 foldername = input('Export Dir: ')
 exportdir = './' + foldername + '/'
+if not os.path.isdir(exportdir):
+    os.makedirs(exportdir)
 
 for i in range(0, container_num):
     filedir = exportdir + 'nclsimdockerfile' + str(i) + '.dockerfile'
