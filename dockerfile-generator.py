@@ -2,21 +2,46 @@ import os
 import sys 
 import ccnchanger
 
+
+## initialization
 simulator = 'default'
+ccr_varied = False
+varied_ccr = []
 
-print('--- Dockerfile generator for simulator ---')
+print('--- Dockerfile generator for nclsims ---')
 
-if(len(sys.argv) <= 1):
+if(len(sys.argv) == 2):
     simulator = str(sys.argv[1])
-    print('Simulator type has been set: simulator')
+    print('Simulator type has been set: ' + simulator)
 
 sim_source = input('Source of simulator (e.g. GitHub, etc): ')
 sim_dir = input('Base directory to install simulator: ')
 configfile_dir = input('Relative path of config file: ')
-container_nmm = input('Number of containers: ')
+container_num = 1
 
 if(simulator == 'sfcsim' or simulator == 'icn-sfcsim'):
-    is_ccn_changing = input('Do you want to experiment with varing CCN? (y/n) :')
+    is_ccn_changing = input('Do you want to experiment with varing CCN? (y/n): ')
     if(is_ccn_changing == 'y'):
+        ccr_plotnum = int(input('Number of CCR plots: '))
+        varied_ccr = ccnchanger.ccn_chaner(int(ccr_plotnum))
+        ccr_varied = True
+        container_num = varied_ccr + 1
+        # print('ccr0: ' + str(varied_ccr[0][0]))
+        # print('datasize0: ' + str(varied_ccr[0][1]))
+else:
+    container_num = int(input('Number of containers: '))
+
+
+## writing to dockerfile
+foldername = input('Export Dir: ')
+exportdir = './' + foldername + '/'
+
+for i in range(0, container_num):
+    filedir = exportdir + 'nclsimdockerfile' + str(i) + '.dockerfile'
+    with open(filedir, mode='w') as f:
+        f.write('test\n')
+        f.write('test2\n')
+    f.close()
+    
 
 
