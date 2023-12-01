@@ -1,1 +1,1 @@
-0/5 * * * * /sim_autoexecutor.sh
+*/5 * * * * /simulator/sim_autoexecutor.sh

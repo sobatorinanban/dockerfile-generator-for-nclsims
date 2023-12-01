@@ -6,7 +6,7 @@ SIMDIR="/simulator/ncl_icn-sfcsim"
 LOGDIR="/simulator/ncl_icn-sfcsim/is"
 LOGFORMAT="????-??-??-??-??-??.csv"
 # BACKUPDIR="/mnt/nfs/simulator-log/"
-BACKUPDIR="/test-sim-log/"
+BACKUPDIR="/test-sim-log"
 
 # # check if killall hangs up
 # ps -a | grep sim_autoexecutor.sh
@@ -36,9 +36,9 @@ if [ $? -ne 0 ]; then
 elif [ -z "$FINDFILE" ]; then
   echo "[sim_autoexecutor] ${DATE} ** Logfile dir is empty."
 else
-  mv -f --backup=numbered ${LOGDIR}/* ${BACKUPDIR}/random/
+  mv -f --backup=numbered ${LOGDIR}/* ${BACKUPDIR}/
 
-  mv /mnt/nfs/simulator-log/random/log4j2.xml /home/user/ncl_icn-sfcsim/is/log4j2.xml
+  mv ${BACKUPDIR}/log4j2.xml ${SIMDIR}/is/log4j2.xml
   echo "[sim_autoexecutor] ${DATE} Backup complete."
 fi
 
