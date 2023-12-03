@@ -1,8 +1,11 @@
-FROM ubuntu:22.04
+FROM ubuntu:20.04
 
 ENV SIMULATOR_NAME ncl_icn-sfcsim
+ENV TZ=Asia/Tokyo
 
 WORKDIR /simulator
+
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt update \
     && apt install -y openjdk-17-jdk ant git psmisc cron
@@ -18,12 +21,10 @@ RUN chmod 777 /simulator/sim_autoexecutor.sh
 # test
 RUN mkdir /test-sim-log
 
-ADD crontab /var/spool/crontab/root
-RUN crontab /var/spool/crontab/root
+COPY crontab /etc/cron.d/crontab
+# RUN echo '*/5 * * * * /bin/bash /simulator/sim_autoexecutor.sh >> /simulator/cron.log 2>&1' > /etc/cron.d/crontab
+RUN chmod 0644 /etc/cron.d/crontab
+RUN /usr/bin/crontab /etc/cron.d/crontab
 
-CMD ["cron" "-f"]
-
-# EXPOSE 3000
-
-# # Start the app using serve command
-# CMD [ "serve", "-s", "build" ]
+# Start cron in the foreground
+ENTRYPOINT ["cron", "-f", "-L", "15"]

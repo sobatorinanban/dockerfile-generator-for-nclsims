@@ -4,7 +4,7 @@ import ccnchanger
 
 
 ## initialization
-simulator = 'default'
+simulator = 'ncl_sfcsim'
 ccr_varied = False
 varied_ccr = []
 
