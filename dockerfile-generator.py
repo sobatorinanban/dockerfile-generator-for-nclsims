@@ -4,22 +4,17 @@ import ccnchanger
 
 
 ## initialization
-simulator = 'ncl_sfcsim'
 ccr_varied = False
 varied_ccr = []
 
 print('--- Dockerfile generator for nclsims ---')
 
-if(len(sys.argv) == 2):
-    simulator = str(sys.argv[1])
-    print('Simulator type has been set: ' + simulator)
-
-sim_source = input('Source of simulator (e.g. GitHub, etc): ')
+simulator = input('Simulator type (e.g. ncl_sfcsim): ')
 sim_dir = input('Base directory to install simulator: ')
-configfile_dir = input('Relative path of config file: ')
+configfile_dir = input('Relative path of config file (e.g. nfv.properties): ')
 container_num = 1
 
-if(simulator == 'sfcsim' or simulator == 'icn-sfcsim'):
+if(simulator == 'sfcsim' or simulator == 'ncl_sfcsim' or simulator == 'icn-sfcsim' or simulator == 'ncl_icn-sfcsim'):
     is_ccn_changing = input('Do you want to experiment with varing CCN? (y/n): ')
     if(is_ccn_changing == 'y'):
         ccr_plotnum = int(input('Number of CCR plots: '))

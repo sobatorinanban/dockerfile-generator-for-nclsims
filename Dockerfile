@@ -1,6 +1,7 @@
 FROM ubuntu:20.04
 
 ENV SIMULATOR_NAME ncl_icn-sfcsim
+ENV LOGBACKUP_DIR /simulator-logs
 ENV TZ=Asia/Tokyo
 
 WORKDIR /simulator
@@ -19,7 +20,7 @@ COPY sim_autoexecutor.sh /simulator/sim_autoexecutor.sh
 RUN chmod 777 /simulator/sim_autoexecutor.sh
 
 # test
-RUN mkdir /test-sim-log
+RUN mkdir ${LOGBACKUP_DIR}
 
 COPY crontab /etc/cron.d/crontab
 # RUN echo '*/5 * * * * /bin/bash /simulator/sim_autoexecutor.sh >> /simulator/cron.log 2>&1' > /etc/cron.d/crontab
