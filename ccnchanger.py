@@ -25,7 +25,6 @@ def ccn_chaner(plot_num):
             vnf_datasize_min = 1
             vnf_datasize_max = 100 
             median_vnf_datasize = 50
-            continue
         else:
             median_vnf_datasize = math.floor((ccr * median_node_bandwidth * median_vnf_workload) / median_node_mips)
             vnf_datasize_min = math.floor(median_vnf_datasize / 2)

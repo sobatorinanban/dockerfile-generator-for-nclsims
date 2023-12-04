@@ -22,6 +22,7 @@ Checked simulators: ncl_sfcsim, ncl_icn-sfcsim.
 Before executing the main program (dockerfile-generator.py), you can modify several template files.  
 If you want to change how often the simulator runs (the default period is 20 min), do the following: edit `crontab` file with and editor. The newline code is LF.
 
+
 ## Use (Generating Dockerfiles)
 Run dockerfile-generator.py by `python ./dockerfile-generator.py`.  
-Then, follow the instructions to enter infomation for the configuration. At this time, if the simulator type is set to SFC, you can enter additional settings for CCR.
+Then, follow the instructions to enter infomation for the configuration. If the simulator type is set to SFC, you can enter additional settings for CCR. In this case, you need to modifiy the config file. Place the config file (like `xxx.properties`) and cpecify the directory by following the instructions in the main program.
