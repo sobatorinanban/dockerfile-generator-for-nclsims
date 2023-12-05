@@ -29,6 +29,11 @@ if [ $? = 0 ]; then
   fi
 fi
 
+# verifying the existence of BACKUPDIR
+if [ ! -d $BACKUPDIR ]; then
+  mkdir -p ${BACKUPDIR}
+fi
+
 # trying to backup logfiles
 FINDFILE=`find $LOGDIR -maxdepth 1 -name $LOGFORMAT`
 if [ $? -ne 0 ]; then

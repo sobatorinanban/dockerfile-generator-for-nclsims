@@ -24,9 +24,6 @@ COPY ${CONFIG_FILE} /simulator/${SIMULATOR_NAME}/${CONFIG_FILE}
 COPY sim_autoexecutor.sh /simulator/sim_autoexecutor.sh
 RUN chmod 777 /simulator/sim_autoexecutor.sh
 
-# test
-RUN mkdir -p ${LOGBACKUP_DIR}/${CONFIG_TYPE}
-
 COPY crontab /etc/cron.d/crontab
 # RUN echo '*/5 * * * * /bin/bash /simulator/sim_autoexecutor.sh >> /simulator/cron.log 2>&1' > /etc/cron.d/crontab
 RUN chmod 0644 /etc/cron.d/crontab
