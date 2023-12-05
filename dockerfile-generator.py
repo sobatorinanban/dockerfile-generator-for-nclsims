@@ -7,15 +7,27 @@ import ccnchanger
 ## initialization
 ccr_varied = False
 interst_order_changed = False
+is_nfs_mounted = False
 interest_order_type = 'random'
 varied_ccr = []
 container_num = 1
 
+
 print('--- Dockerfile generator for nclsims ---')
+print('')
+
 
 simulator = input('Which Simulator do you use? (e.g. repository name, like ncl_sfcsim): ')
+
 run_sh = input('Which is the executable file of the simulator? (e.g. nfvrun.sh): ')
+
 backup_dir = input("In which directory in the container do you want to back up the simulator logs? (e.g. /simulatorlog): ")
+
+backup_with_nfs = input("Do you want to use NFS as a backup location for logs? (y/n): ")
+if(backup_with_nfs == 'y'):
+    print("Notice: Manually edit the volumes paragraph in docker-compose.yml to mount NFS storage.")
+    is_nfs_mounted = True
+
 configfile_dir = input('Which config file do you use (e.g. nfv.properties): ')
 print("Notice: If you have not already placed the config file, please place it directly in the program's folder. ")
 
@@ -32,15 +44,51 @@ if(simulator == 'sfcsim' or simulator == 'ncl_sfcsim' or simulator == 'icn-sfcsi
         if(is_change_interest_order == 'y'):
             interst_order_changed = True
             interest_order_type = input('Which type of Interest sending order (random, workload, or blevel): ')
+
+    if(ccr_varied == False):
+        container_num = int(input('Number of containers: '))
 else:
     container_num = int(input('Number of containers: '))
 
 
-## writing to dockerfile
+## check and make export dir
 foldername = input('Export folder name: ')
 exportbasedir = './' + foldername + '/'
 if not os.path.isdir(exportbasedir):
     os.makedirs(exportbasedir)
+
+# checking if yml already touched
+is_yml_touched = False
+with open('./docker-compose.yml', mode='r', encoding='utf-8') as yml:
+    for i, line in enumerate(yml):
+        if 'services: ' in line:
+            is_yml_touched = True
+            break
+
+if not (is_yml_touched):
+    print('yml already touched')
+    with open('./docker-compose.yml', mode='a', encoding='utf-8') as yml:
+        yml.write('services: \n')
+else:
+    volumes_linenum = 0
+    is_volumes_set = False
+    with open('./docker-compose.yml', mode='r', encoding='utf-8') as yml:
+        for num, line in enumerate(yml):
+            if line == 'volumes: \n':
+                volumes_linenum = num
+                is_volumes_set = True
+                print('volumes is already set')
+                print('lines: ' + str(num))
+                break
+    if(is_volumes_set):
+        with open('./docker-compose.yml', mode='r+', encoding='utf-8') as yml:
+            lines = yml.readlines()
+            yml.seek(0)
+            yml.truncate()
+            for num, line in enumerate(lines):
+                if num < volumes_linenum:
+                    yml.write(line)
+
 
 for i in range(0, container_num):
     folderdir = exportbasedir + str(i) + '/'
@@ -48,6 +96,9 @@ for i in range(0, container_num):
         folderdir = exportbasedir + 'ccrplot' + str(i) + '/'
         if(interst_order_changed):
             folderdir = exportbasedir + interest_order_type + '/' + 'ccrplot' + str(i) + '/'
+    else:
+        if(interst_order_changed):
+            folderdir = exportbasedir + interest_order_type + '/' + str(i) + '/'
     if not os.path.isdir(folderdir):
         os.makedirs(folderdir)
 
@@ -56,6 +107,9 @@ for i in range(0, container_num):
         config_type = 'ccrplot' + str(i)
         if(interst_order_changed):
             config_type = interest_order_type + "/" + 'ccrplot' + str(i)
+    else:
+        if(interst_order_changed):
+            config_type = interest_order_type + "/" + str(i)
 
     shutil.copy2(configfile_dir, folderdir)
     shutil.copy2("./sim_autoexecutor.sh", folderdir)
@@ -82,7 +136,31 @@ for i in range(0, container_num):
     with open(folderdir + 'sim_autoexecutor.sh', mode='w', encoding='utf-8') as writer:
         writer.write(data_lines_sh)
 
+    # docker-compose.yml
+    with open('./docker-compose.yml', mode='a', encoding='utf-8') as yml:
+        yml.write('  ' + config_type + ": " + '\n')
+        yml.write('    ' + 'build: ' + folderdir + '\n')
+        if(is_nfs_mounted):    
+            yml.write('    ' + 'volumes: \n' )
+            yml.write('      ' + '- log_backup:' + backup_dir + '\n')
+        yml.write('\n')
 
-    
+
+# is_volumes_set = False
+if(is_nfs_mounted):
+    # with open('./docker-compose.yml', mode='r', encoding='utf-8') as yml:
+    #     for i in line in enumerate(yml):
+    #         if '    driver_opts: ' in line:
+    #             is_volumes_set = True
+    #             break
+    with open('./docker-compose.yml', mode='a', encoding='utf-8') as yml:
+        yml.write('volumes: \n')
+        yml.write('  ' + 'log_backup: \n')
+        yml.write('    ' + 'driver_opts: \n')
+        yml.write('      ' + 'type: nfs \n')
+        yml.write('      ' + 'o: "addr=" \n')
+        yml.write('      ' + 'device: "" \n')
 
 
+print('')    
+print('--- Dockerfile and docker-compose.yml exported ---')
