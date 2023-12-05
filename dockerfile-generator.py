@@ -25,13 +25,13 @@ backup_dir = input("In which directory in the container do you want to back up t
 
 backup_with_nfs = input("Do you want to use NFS as a backup location for logs? (y/n): ")
 if(backup_with_nfs == 'y'):
-    print("Notice: Manually edit the volumes paragraph in docker-compose.yml to mount NFS storage.")
+    print("Notice: You will need to manually edit the volumes paragraph in docker-compose.yml later to mount the NFS storage.")
     is_nfs_mounted = True
 
-configfile_dir = input('Which config file do you use (e.g. nfv.properties): ')
+configfile = input('Which config file do you use (e.g. nfv.properties): ')
 print("Notice: If you have not already placed the config file, please place it directly in the program's folder. ")
 
-if(simulator == 'sfcsim' or simulator == 'ncl_sfcsim' or simulator == 'icn-sfcsim' or simulator == 'ncl_icn-sfcsim'):
+if(simulator == 'ncl_icn-sfcsim'):
     is_ccn_changing = input('Do you want to experiment with varing CCN? (y/n): ')
     if(is_ccn_changing == 'y'):
         ccr_plotnum = int(input('Number of CCR plots: '))
@@ -59,14 +59,15 @@ if not os.path.isdir(exportbasedir):
 
 # checking if yml already touched
 is_yml_touched = False
-with open('./docker-compose.yml', mode='r', encoding='utf-8') as yml:
-    for i, line in enumerate(yml):
-        if 'services: ' in line:
-            is_yml_touched = True
-            break
+is_yml = os.path.isfile('./docker-compose.yml')
+if is_yml:
+    with open('./docker-compose.yml', mode='r', encoding='utf-8') as yml:
+        for i, line in enumerate(yml):
+            if 'services: ' in line:
+                is_yml_touched = True
+                break
 
 if not (is_yml_touched):
-    print('yml already touched')
     with open('./docker-compose.yml', mode='a', encoding='utf-8') as yml:
         yml.write('services: \n')
 else:
@@ -77,8 +78,6 @@ else:
             if line == 'volumes: \n':
                 volumes_linenum = num
                 is_volumes_set = True
-                print('volumes is already set')
-                print('lines: ' + str(num))
                 break
     if(is_volumes_set):
         with open('./docker-compose.yml', mode='r+', encoding='utf-8') as yml:
@@ -111,7 +110,7 @@ for i in range(0, container_num):
         if(interst_order_changed):
             config_type = interest_order_type + "/" + str(i)
 
-    shutil.copy2(configfile_dir, folderdir)
+    shutil.copy2(configfile, folderdir)
     shutil.copy2("./sim_autoexecutor.sh", folderdir)
     shutil.copy2("./crontab", folderdir)
     shutil.copy2("./Dockerfile", folderdir)
@@ -136,7 +135,26 @@ for i in range(0, container_num):
     with open(folderdir + 'sim_autoexecutor.sh', mode='w', encoding='utf-8') as writer:
         writer.write(data_lines_sh)
 
-    # docker-compose.yml
+    # .properties
+    with open(folderdir + configfile, mode='r', encoding='utf-8') as reader:
+        data_lines_pr = reader.read()
+    if(ccr_varied):
+        data_lines_pr = data_lines_pr.replace('vnf_datasize_min=1', 'vnf_datasize_min=' + str(varied_ccr[i][1]))
+        data_lines_pr = data_lines_pr.replace('vnf_datasize_max=1000', 'vnf_datasize_max=' +str(varied_ccr[i][2]))
+        print('plot' + str(i) + "'s Average Datasize of VNF: " + str(varied_ccr[i][0]))
+    if(interst_order_changed):
+        mode = 0
+        if(interest_order_type == 'random'):
+            mode = 0
+        elif(interest_order_type == 'workload'):
+            mode = 1
+        elif(interest_order_type == 'blevel'):
+            mode = 2
+        data_lines_pr = data_lines_pr.replace('sfc_vnf_ordering_mode=0', 'sfc_vnf_ordering_mode=' + str(mode))
+    with open(folderdir + configfile, mode='w', encoding='utf-8') as writer:
+        writer.write(data_lines_pr)
+
+    # docker-compose.yml -- services
     with open('./docker-compose.yml', mode='a', encoding='utf-8') as yml:
         yml.write('  ' + config_type + ": " + '\n')
         yml.write('    ' + 'build: ' + folderdir + '\n')
@@ -146,13 +164,8 @@ for i in range(0, container_num):
         yml.write('\n')
 
 
-# is_volumes_set = False
+# docker-compose.yml -- volumes
 if(is_nfs_mounted):
-    # with open('./docker-compose.yml', mode='r', encoding='utf-8') as yml:
-    #     for i in line in enumerate(yml):
-    #         if '    driver_opts: ' in line:
-    #             is_volumes_set = True
-    #             break
     with open('./docker-compose.yml', mode='a', encoding='utf-8') as yml:
         yml.write('volumes: \n')
         yml.write('  ' + 'log_backup: \n')
