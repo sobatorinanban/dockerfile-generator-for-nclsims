@@ -1,5 +1,5 @@
 # dockerfile-generator-for-nclsims
-[W.I.P.] Dockerfile generator for simulator made by NCL (e.g. ncl_sfcsim) in repeated experiments.  
+Dockerfile generator for simulator made by NCL (e.g. ncl_sfcsim) in repeated experiments.  
 
 This program generates a Dockerfile for repeated experimentation with the simulator made by NCL.  
 I have not checked them all, but they probably work with most NCL simulators.  
@@ -19,15 +19,12 @@ Checked simulators: ncl_sfcsim, ncl_icn-sfcsim.
     - Script template for repeated experiments.
 
 ## Setting
-Before executing the main program (dockerfile-generator.py), you need to place the config file (like `xxx.properties`).  
-You can modify several template files (Dockerfile, sim_autoexecutor.sh) if you want to.  
-If you want to change how often the simulator runs (the default period is 20 min), do the following: edit `crontab` file with and editor. The newline code is LF.
-
-
-
+Before running the main program, a configuration file (such as `xxx.properties`) must be placed directly in the same location as the main program.  
+You can modify several template files (Dockerfile, sim_autoexecutor.sh, etc) if you want to.  
+If you want to change how often the simulator runs (the default period is 20 min), do the following: edit `crontab` file with and editor. Only LF is allowed as a line feed code.  
 
 ## Use (Generating Dockerfiles)
-Run dockerfile-generator.py by `python ./dockerfile-generator.py`.  
+Run main program by `python ./dockerfile-generator.py`.  
 Then, follow the instructions to enter infomation for the configuration.  
 If the simulator type is set to ncl_sfcsim, you can enter additional settings for CCR. 
 
@@ -67,3 +64,5 @@ plot10's Average Datasize of VNF: 11916
 Open docker-compose.yml by `vi docker-compose.yml`.  
 
 Edit `volumes: `paragraph in `docker-compose.yml` to configure NFS storage.  
+
+Run `docker compose up`.  
