@@ -68,7 +68,7 @@ if is_yml:
                 break
 
 if not (is_yml_touched):
-    with open('./docker-compose.yml', mode='a', encoding='utf-8') as yml:
+    with open('./docker-compose.yml', mode='a', encoding='utf-8', newline='\n') as yml:
         yml.write('version: "3" \n')
         yml.write('\n')
         yml.write('services: \n')
@@ -82,7 +82,7 @@ else:
                 is_volumes_set = True
                 break
     if(is_volumes_set):
-        with open('./docker-compose.yml', mode='r+', encoding='utf-8') as yml:
+        with open('./docker-compose.yml', mode='r+', encoding='utf-8', newline='\n') as yml:
             lines = yml.readlines()
             yml.seek(0)
             yml.truncate()
@@ -125,7 +125,7 @@ for i in range(0, container_num):
     data_lines_dk = data_lines_dk.replace('ENV CONFIG_FILE nfv.properties', 'ENV CONFIG_FILE ' + configfile)
     data_lines_dk = data_lines_dk.replace('ENV CONFIG_TYPE random/0', 'ENV CONFIG_TYPE ' + config_type)
     data_lines_dk = data_lines_dk.replace('ENV RUN_SH nfvrun.sh', 'ENV RUN_SH ' + run_sh)
-    with open(folderdir + 'Dockerfile', mode='w', encoding='utf-8') as writer:
+    with open(folderdir + 'Dockerfile', mode='w', encoding='utf-8', newline='\n') as writer:
         writer.write(data_lines_dk)
 
     # Shellscript (sim_autoexecutor.sh)
@@ -135,7 +135,7 @@ for i in range(0, container_num):
     data_lines_sh = data_lines_sh.replace('SIMDIR="/simulator/ncl_icn-sfcsim"', 'SIMDIR="/simulator/' + simulator + '"')
     data_lines_sh = data_lines_sh.replace('LOGDIR="/simulator/ncl_icn-sfcsim/is"', 'LOGDIR="/simulator/' + simulator + '/is"')
     data_lines_sh = data_lines_sh.replace('RUNSH="./nfvrun.sh"', 'RUNSH="./' + run_sh + '"')
-    with open(folderdir + 'sim_autoexecutor.sh', mode='w', encoding='utf-8') as writer:
+    with open(folderdir + 'sim_autoexecutor.sh', mode='w', encoding='utf-8', newline='\n') as writer:
         writer.write(data_lines_sh)
 
     # .properties
@@ -154,11 +154,11 @@ for i in range(0, container_num):
         elif(interest_order_type == 'blevel'):
             mode = 2
         data_lines_pr = data_lines_pr.replace('sfc_vnf_ordering_mode=0', 'sfc_vnf_ordering_mode=' + str(mode))
-    with open(folderdir + configfile, mode='w', encoding='utf-8') as writer:
+    with open(folderdir + configfile, mode='w', encoding='utf-8', newline='\n') as writer:
         writer.write(data_lines_pr)
 
     # docker-compose.yml -- services
-    with open('./docker-compose.yml', mode='a', encoding='utf-8') as yml:
+    with open('./docker-compose.yml', mode='a', encoding='utf-8', newline='\n') as yml:
         yml.write('  ' + config_type.replace('/', '') + ": " + '\n')
         yml.write('    ' + 'build: ' + folderdir + '\n')
         if(is_nfs_mounted):    
@@ -169,7 +169,7 @@ for i in range(0, container_num):
 
 # docker-compose.yml -- volumes
 if(is_nfs_mounted):
-    with open('./docker-compose.yml', mode='a', encoding='utf-8') as yml:
+    with open('./docker-compose.yml', mode='a', encoding='utf-8', newline='\n') as yml:
         yml.write('volumes: \n')
         yml.write('  ' + 'log_backup: \n')
         yml.write('    ' + 'driver_opts: \n')
