@@ -3,7 +3,7 @@ FROM ubuntu:20.04
 ENV SIMULATOR_NAME ncl_icn-sfcsim
 ENV LOGBACKUP_DIR /simulator-logs
 ENV CONFIG_TYPE random/0
-ENV RUN_SH = nfvrun.sh
+ENV RUN_SH nfvrun.sh
 ENV TZ=Asia/Tokyo
 
 WORKDIR /simulator

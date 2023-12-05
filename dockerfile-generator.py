@@ -123,7 +123,7 @@ for i in range(0, container_num):
     data_lines_dk = data_lines_dk.replace('ENV SIMULATOR_NAME ncl_icn-sfcsim', 'ENV SIMULATOR_NAME ' + simulator)
     data_lines_dk = data_lines_dk.replace('ENV LOGBACKUP_DIR /simulator-logs', 'ENV LOGBACKUP_DIR ' + backup_dir)
     data_lines_dk = data_lines_dk.replace('ENV CONFIG_TYPE random/0', 'ENV CONFIG_TYPE ' + config_type)
-    data_lines_dk = data_lines_dk.replace('ENV RUN_SH = nfvrun.sh', 'ENV RUN_SH = ' + run_sh)
+    data_lines_dk = data_lines_dk.replace('ENV RUN_SH nfvrun.sh', 'ENV RUN_SH ' + run_sh)
     with open(folderdir + 'Dockerfile', mode='w', encoding='utf-8') as writer:
         writer.write(data_lines_dk)
 
