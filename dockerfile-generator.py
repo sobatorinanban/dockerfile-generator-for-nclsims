@@ -130,7 +130,7 @@ for i in range(0, container_num):
         data_lines_sh = reader.read()
     data_lines_sh = data_lines_sh.replace('BACKUPDIR="/test-sim-log"', 'BACKUPDIR=' + '"' + backup_dir + '/' + config_type + '"')
     data_lines_sh = data_lines_sh.replace('SIMDIR="/simulator/ncl_icn-sfcsim"', 'SIMDIR="/simulator/' + simulator + '"')
-    data_lines_sh = data_lines_sh.replace('LOGDIR="/simulator/ncl_icn-sfcsim/is"', 'LOGDIR="/simulator/' + '"' + simulator + '/is"')
+    data_lines_sh = data_lines_sh.replace('LOGDIR="/simulator/ncl_icn-sfcsim/is"', 'LOGDIR="/simulator/' + simulator + '/is"')
     data_lines_sh = data_lines_sh.replace('RUNSH="./nfvrun.sh"', 'RUNSH="./' + run_sh + '"')
     with open(folderdir + 'sim_autoexecutor.sh', mode='w', encoding='utf-8') as writer:
         writer.write(data_lines_sh)

@@ -5,7 +5,6 @@ DATE=`date "+%Y-%m-%d-%H-%M"`
 SIMDIR="/simulator/ncl_icn-sfcsim"
 LOGDIR="/simulator/ncl_icn-sfcsim/is"
 LOGFORMAT="????-??-??-??-??-??.csv"
-# BACKUPDIR="/mnt/nfs/simulator-log/"
 BACKUPDIR="/test-sim-log"
 RUNSH="./nfvrun.sh"
 
