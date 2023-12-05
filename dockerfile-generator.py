@@ -14,9 +14,10 @@ container_num = 1
 print('--- Dockerfile generator for nclsims ---')
 
 simulator = input('Which Simulator do you use? (e.g. repository name, like ncl_sfcsim): ')
+run_sh = input('Which is the executable file of the simulator? (e.g. nfvrun.sh): ')
 backup_dir = input("In which directory in the container do you want to back up the simulator logs? (e.g. /simulatorlog): ")
 configfile_dir = input('Which config file do you use (e.g. nfv.properties): ')
-print("notice: If you have not already placed the config file, please place it directly in the program's folder. ")
+print("Notice: If you have not already placed the config file, please place it directly in the program's folder. ")
 
 if(simulator == 'sfcsim' or simulator == 'ncl_sfcsim' or simulator == 'icn-sfcsim' or simulator == 'ncl_icn-sfcsim'):
     is_ccn_changing = input('Do you want to experiment with varing CCN? (y/n): ')
@@ -64,9 +65,10 @@ for i in range(0, container_num):
     # Dockerfile
     with open(folderdir + 'Dockerfile', mode='r', encoding='utf-8') as reader:
         data_lines_dk = reader.read()
-    data_lines_dk = data_lines_dk.replace("ENV SIMULATOR_NAME ncl_icn-sfcsim", "ENV SIMULATOR_NAME " + simulator)
-    data_lines_dk = data_lines_dk.replace("ENV LOGBACKUP_DIR /simulator-logs", "ENV LOGBACKUP_DIR " + backup_dir)
-    data_lines_dk = data_lines_dk.replace("ENV CONFIG_TYPE Random/0", "CONFIG_TYPE " + config_type)
+    data_lines_dk = data_lines_dk.replace('ENV SIMULATOR_NAME ncl_icn-sfcsim', 'ENV SIMULATOR_NAME ' + simulator)
+    data_lines_dk = data_lines_dk.replace('ENV LOGBACKUP_DIR /simulator-logs', 'ENV LOGBACKUP_DIR ' + backup_dir)
+    data_lines_dk = data_lines_dk.replace('ENV CONFIG_TYPE random/0', 'ENV CONFIG_TYPE ' + config_type)
+    data_lines_dk = data_lines_dk.replace('ENV RUN_SH = nfvrun.sh', 'ENV RUN_SH = ' + run_sh)
     with open(folderdir + 'Dockerfile', mode='w', encoding='utf-8') as writer:
         writer.write(data_lines_dk)
 
@@ -76,6 +78,7 @@ for i in range(0, container_num):
     data_lines_sh = data_lines_sh.replace('BACKUPDIR="/test-sim-log"', 'BACKUPDIR=' + '"' + backup_dir + '/' + config_type + '"')
     data_lines_sh = data_lines_sh.replace('SIMDIR="/simulator/ncl_icn-sfcsim"', 'SIMDIR="/simulator/' + simulator + '"')
     data_lines_sh = data_lines_sh.replace('LOGDIR="/simulator/ncl_icn-sfcsim/is"', 'LOGDIR="/simulator/' + '"' + simulator + '/is"')
+    data_lines_sh = data_lines_sh.replace('RUNSH="./nfvrun.sh"', 'RUNSH="./' + run_sh + '"')
     with open(folderdir + 'sim_autoexecutor.sh', mode='w', encoding='utf-8') as writer:
         writer.write(data_lines_sh)
 

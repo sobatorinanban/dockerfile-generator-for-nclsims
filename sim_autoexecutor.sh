@@ -7,6 +7,7 @@ LOGDIR="/simulator/ncl_icn-sfcsim/is"
 LOGFORMAT="????-??-??-??-??-??.csv"
 # BACKUPDIR="/mnt/nfs/simulator-log/"
 BACKUPDIR="/test-sim-log"
+RUNSH="./nfvrun.sh"
 
 # # check if killall hangs up
 # ps -a | grep sim_autoexecutor.sh
@@ -44,5 +45,5 @@ fi
 
 # run simulator
 cd ${SIMDIR}
-./automain.sh > /dev/null &
+${RUNSH} > /dev/null &
 exit 0
