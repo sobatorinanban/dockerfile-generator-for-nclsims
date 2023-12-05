@@ -69,6 +69,8 @@ if is_yml:
 
 if not (is_yml_touched):
     with open('./docker-compose.yml', mode='a', encoding='utf-8') as yml:
+        yml.write('version: "3" \n')
+        yml.write('\n')
         yml.write('services: \n')
 else:
     volumes_linenum = 0
