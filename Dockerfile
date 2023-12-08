@@ -12,7 +12,7 @@ WORKDIR /simulator
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt update \
-    && apt install -y openjdk-17-jdk ant git psmisc cron
+    && apt install -y openjdk-11-jdk ant git psmisc cron
 
 RUN git clone https://github.com/ncl-teu/${SIMULATOR_NAME}.git \
     && cd ${SIMULATOR_NAME} \
