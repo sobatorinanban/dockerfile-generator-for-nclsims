@@ -1,6 +1,7 @@
 FROM ubuntu:20.04
 
 ENV SIMULATOR_NAME ncl_icn-sfcsim
+ENV SIMULATOR_BRANCH master
 ENV LOGBACKUP_DIR /simulator-logs
 ENV CONFIG_FILE nfv.properties
 ENV CONFIG_TYPE random/0
@@ -16,6 +17,7 @@ RUN apt update \
 
 RUN git clone https://github.com/ncl-teu/${SIMULATOR_NAME}.git \
     && cd ${SIMULATOR_NAME} \
+    && git checkout -b ${SIMULATOR_BRANCH} \
     && ant build \
     && chmod 777 ${RUN_SH}
 
