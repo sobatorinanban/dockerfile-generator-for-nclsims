@@ -17,7 +17,7 @@ RUN apt update \
 
 RUN git clone https://github.com/ncl-teu/${SIMULATOR_NAME}.git \
     && cd ${SIMULATOR_NAME} \
-    && git checkout -b ${SIMULATOR_BRANCH} \
+    && git checkout ${SIMULATOR_BRANCH} \
     && ant build \
     && chmod 777 ${RUN_SH}
 
