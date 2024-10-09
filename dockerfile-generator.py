@@ -117,7 +117,7 @@ else:
                 if num < volumes_linenum:
                     yml.write(line)
 
-for vnfnum in range(20, max_vnf_num+1, 5):
+for vnfnum in range(10, max_vnf_num+1, 5):
 
 
     for i in range(0, container_num):
