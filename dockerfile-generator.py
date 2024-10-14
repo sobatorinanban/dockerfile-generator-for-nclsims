@@ -16,6 +16,7 @@ interest_order_type = 'random'
 varied_ccr = []
 container_num = 1
 max_vnf_num = 20
+min_vnf_num = 20
 
 
 print('--- Dockerfile generator for nclsims ---')
@@ -50,9 +51,11 @@ if(simulator == 'ncl_icn-sfcsim'):
     if(is_vnf_num_changing == 'y'):
         sfc_vnf_num_varied = True
         max_vnf_num = int(input('Maximum number of VNFs in SFC: '))
+        min_vnf_num = int(input('Minimum number of VNFs in SFC: '))
     else:
         sfc_vnf_num_varied = False
         max_vnf_num = 20
+        min_vnf_num = 20
 
     is_ccn_changing = input('Do you want to experiment with varing CCN? (y/n): ')
     if(is_ccn_changing == 'y'):
@@ -117,7 +120,7 @@ else:
                 if num < volumes_linenum:
                     yml.write(line)
 
-for vnfnum in range(10, max_vnf_num+1, 5):
+for vnfnum in range(min_vnf_num, max_vnf_num+1, 5):
 
 
     for i in range(0, container_num):
