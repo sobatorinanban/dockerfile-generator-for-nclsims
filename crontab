@@ -1,2 +1,2 @@
-*/20 * * * * /bin/bash /simulator/sim_autoexecutor.sh >> /simulator/cron.log 2>&1
+*/30 * * * * /bin/bash /simulator/sim_autoexecutor.sh >> /simulator/cron.log 2>&1
 
