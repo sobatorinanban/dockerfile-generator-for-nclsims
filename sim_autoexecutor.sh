@@ -2,11 +2,11 @@
 
 DATE=`date "+%Y-%m-%d-%H-%M"`
 
-SIMDIR="/simulator/ncl_icn-sfcsim"
-LOGDIR="/simulator/ncl_icn-sfcsim/is"
+SIMDIR="/simulator"
+LOGDIR="/simulator/is"
 LOGFORMAT="????-??-??-??-??-??.csv"
-BACKUPDIR="/test-sim-log"
-RUNSH="./nfvrun.sh"
+BACKUPDIR="/default-sim-log"
+RUNSH="./default.sh"
 
 # # check if killall hangs up
 # ps -a | grep sim_autoexecutor.sh
