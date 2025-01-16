@@ -65,4 +65,10 @@ Open docker-compose.yml by `vi docker-compose.yml`.
 
 Edit `volumes: `paragraph in `docker-compose.yml` to configure NFS storage.  
 
-Run `docker compose up`.  
+Step1
+
+Run `docker compose run builder`.  Clone and build simulator.
+
+Step2
+
+Run `docker compose up`.  Running simulator.
