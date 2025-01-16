@@ -179,7 +179,7 @@ for vnfnum in range(min_vnf_num, max_vnf_num+1, 5):
             'build': {
                 'context': f'./{foldername}',
                 'args': {
-                    'CONFIG_TYPE': config_type.replace('/', ''),
+                    'CONFIG_TYPE': config_type,
                     'SIMULATOR_NAME': simulator,
                     'CONFIG_FILE': configfile,
                     'RUN_SH': run_sh,
