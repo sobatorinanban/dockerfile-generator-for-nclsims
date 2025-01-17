@@ -1,7 +1,7 @@
-import os 
+import os
 import shutil
-import sys 
 import ccnchanger
+import yaml
 
 
 ## initialization
@@ -52,6 +52,13 @@ if(simulator == 'ncl_icn-sfcsim'):
         sfc_vnf_num_varied = True
         max_vnf_num = int(input('Maximum number of VNFs in SFC: '))
         min_vnf_num = int(input('Minimum number of VNFs in SFC: '))
+
+        # check and fix misstake
+        if(min_vnf_num > max_vnf_num):
+            tmp = max_vnf_num
+            max_vnf_num = min_vnf_num
+            min_vnf_num = tmp
+
     else:
         sfc_vnf_num_varied = False
         max_vnf_num = 20
@@ -60,7 +67,7 @@ if(simulator == 'ncl_icn-sfcsim'):
     is_ccn_changing = input('Do you want to experiment with varing CCN? (y/n): ')
     if(is_ccn_changing == 'y'):
         ccr_plotnum = int(input('Number of CCR plots: '))
-        varied_ccr = ccnchanger.ccn_chaner(int(ccr_plotnum)) 
+        varied_ccr = ccnchanger.ccn_chaner(int(ccr_plotnum))
         ccr_varied = True
         container_num = ccr_plotnum + 1
 
@@ -87,39 +94,27 @@ exportbasedir = './' + foldername + '/'
 if not os.path.isdir(exportbasedir):
     os.makedirs(exportbasedir)
 
-# checking if yml already touched
-is_yml_touched = False
-is_yml = os.path.isfile('./docker-compose.yml')
-if is_yml:
-    with open('./docker-compose.yml', mode='r', encoding='utf-8') as yml:
-        for i, line in enumerate(yml):
-            if 'services: ' in line:
-                is_yml_touched = True
-                break
+# make docker-compose.yml builder section
+yaml_data = {
+    'version': '3.8',
+    'services': {
+        'builder': {
+            'build': {
+                'context': '.',
+                'dockerfile': 'Dockerfile.builder',
+            },
+            'image': 'ncl-javaimg:latest',
+            'container_name': 'builder',
+            'working_dir': '/app',
+            'volumes': [
+                f'./{foldername}/sims:/app'
+            ],
+            'command': f'bash -c "if [ -d {simulator} ]; then cd {simulator} && git checkout {simulator_branch} && ant build; else git clone https://github.com/ncl-teu/{simulator}.git && cd {simulator} && git checkout {simulator_branch} && ant build; fi"'
+        },
+    }
+}
 
-if not (is_yml_touched):
-    with open('./docker-compose.yml', mode='a', encoding='utf-8', newline='\n') as yml:
-        yml.write('version: "3" \n')
-        yml.write('\n')
-        yml.write('services: \n')
-else:
-    volumes_linenum = 0
-    is_volumes_set = False
-    with open('./docker-compose.yml', mode='r', encoding='utf-8') as yml:
-        for num, line in enumerate(yml):
-            if line == 'volumes: \n':
-                volumes_linenum = num
-                is_volumes_set = True
-                break
-    if(is_volumes_set):
-        with open('./docker-compose.yml', mode='r+', encoding='utf-8', newline='\n') as yml:
-            lines = yml.readlines()
-            yml.seek(0)
-            yml.truncate()
-            for num, line in enumerate(lines):
-                if num < volumes_linenum:
-                    yml.write(line)
-
+# nvf roop
 for vnfnum in range(min_vnf_num, max_vnf_num+1, 5):
 
 
@@ -145,27 +140,12 @@ for vnfnum in range(min_vnf_num, max_vnf_num+1, 5):
         shutil.copy2(configfile, folderdir)
         shutil.copy2("./sim_autoexecutor.sh", folderdir)
         shutil.copy2("./crontab", folderdir)
-        shutil.copy2("./Dockerfile", folderdir)
+        shutil.copy2("./Dockerfile", exportbasedir) # 配置を1つ上の階層へ
 
-        # Dockerfile
-        with open(folderdir + 'Dockerfile', mode='r', encoding='utf-8') as reader:
-            data_lines_dk = reader.read()
-        data_lines_dk = data_lines_dk.replace('ENV SIMULATOR_NAME ncl_icn-sfcsim', 'ENV SIMULATOR_NAME ' + simulator)
-        data_lines_dk = data_lines_dk.replace('ENV SIMULATOR_BRANCH master', 'ENV SIMULATOR_BRANCH ' + simulator_branch)
-        data_lines_dk = data_lines_dk.replace('ENV LOGBACKUP_DIR /simulator-logs', 'ENV LOGBACKUP_DIR ' + backup_dir)
-        data_lines_dk = data_lines_dk.replace('ENV CONFIG_FILE nfv.properties', 'ENV CONFIG_FILE ' + configfile)
-        data_lines_dk = data_lines_dk.replace('ENV CONFIG_TYPE random/0', 'ENV CONFIG_TYPE ' + config_type)
-        data_lines_dk = data_lines_dk.replace('ENV RUN_SH nfvrun.sh', 'ENV RUN_SH ' + run_sh)
-        with open(folderdir + 'Dockerfile', mode='w', encoding='utf-8', newline='\n') as writer:
-            writer.write(data_lines_dk)
-
-        # Shellscript (sim_autoexecutor.sh)
         with open(folderdir + 'sim_autoexecutor.sh', mode='r', encoding='utf-8') as reader:
             data_lines_sh = reader.read()
-        data_lines_sh = data_lines_sh.replace('BACKUPDIR="/test-sim-log"', 'BACKUPDIR=' + '"' + backup_dir + '/' + config_type + '"')
-        data_lines_sh = data_lines_sh.replace('SIMDIR="/simulator/ncl_icn-sfcsim"', 'SIMDIR="/simulator/' + simulator + '"')
-        data_lines_sh = data_lines_sh.replace('LOGDIR="/simulator/ncl_icn-sfcsim/is"', 'LOGDIR="/simulator/' + simulator + '/is"')
-        data_lines_sh = data_lines_sh.replace('RUNSH="./nfvrun.sh"', 'RUNSH="./' + run_sh + '"')
+        data_lines_sh = data_lines_sh.replace('BACKUPDIR="/default-sim-log"', 'BACKUPDIR=' + '"' + backup_dir + '/' + config_type + '"')
+        data_lines_sh = data_lines_sh.replace('RUNSH="./default.sh"', 'RUNSH="./' + run_sh + '"')
         with open(folderdir + 'sim_autoexecutor.sh', mode='w', encoding='utf-8', newline='\n') as writer:
             writer.write(data_lines_sh)
 
@@ -194,20 +174,31 @@ for vnfnum in range(min_vnf_num, max_vnf_num+1, 5):
         with open(folderdir + configfile, mode='w', encoding='utf-8', newline='\n') as writer:
             writer.write(data_lines_pr)
 
-        # docker-compose.yml -- services
-        with open('./docker-compose.yml', mode='a', encoding='utf-8', newline='\n') as yml:
-            yml.write('  ' + config_type.replace('/', '') + ": " + '\n')
-            yml.write('    ' + 'build: ' + folderdir + '\n')
-            if(is_nfs_mounted):
-                yml.write('    ' + 'volumes: \n' )
-                yml.write('      ' + '- log_backup:' + backup_dir + '\n')
-            elif(is_bind_mounted):
-                yml.write('    ' + 'volumes: \n' )
-                yml.write('      - ' + 'type: bind\n')
-                yml.write('        ' + 'source: ' + bind_mount_dir + '\n')
-                yml.write('        ' + 'target: ' + backup_dir + '\n')
-            yml.write('\n')
+        # make docker-compose.yml services section
+        yaml_data['services'][config_type.replace('/', '')] = {
+            'build': {
+                'context': f'./{foldername}',
+                'args': {
+                    'CONFIG_TYPE': config_type,
+                    'SIMULATOR_NAME': simulator,
+                    'CONFIG_FILE': configfile,
+                    'RUN_SH': run_sh,
+                },
+            },
+            'depends_on': {
+                'builder': {
+                    'condition': 'service_completed_successfully'
+                }
+            },
+            'volumes': [
+                f'./{foldername}/sims:/app',
+                f'{bind_mount_dir}:{backup_dir}'
+            ]
+        }
 
+# write yml file(only over write)
+with open("docker-compose.yml", 'w') as file:
+    yaml.dump(yaml_data, file, default_flow_style=False, sort_keys=False)
 
 # docker-compose.yml -- volumes
 if(is_nfs_mounted):
@@ -220,5 +211,5 @@ if(is_nfs_mounted):
         yml.write('      ' + 'device: "" \n')
 
 
-print('')    
+print('')
 print('--- Dockerfile and docker-compose.yml exported ---')

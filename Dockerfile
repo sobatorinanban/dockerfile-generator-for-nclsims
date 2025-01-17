@@ -1,32 +1,26 @@
-FROM ubuntu:20.04
+FROM ncl-javaimg:latest
 
-ENV SIMULATOR_NAME ncl_icn-sfcsim
-ENV SIMULATOR_BRANCH master
-ENV LOGBACKUP_DIR /simulator-logs
-ENV CONFIG_FILE nfv.properties
-ENV CONFIG_TYPE random/0
-ENV RUN_SH nfvrun.sh
-ENV TZ=Asia/Tokyo
+ARG SIMULATOR_NAME
+ARG CONFIG_TYPE
+ARG CONFIG_FILE
+ARG RUN_SH
 
 WORKDIR /simulator
 
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+COPY /sims/${SIMULATOR_NAME}/${RUN_SH} /simulator/${RUN_SH}
 
-RUN apt update \
-    && apt install -y openjdk-11-jdk ant git psmisc cron
+RUN chmod 777 ${RUN_SH}
 
-RUN git clone https://github.com/ncl-teu/${SIMULATOR_NAME}.git \
-    && cd ${SIMULATOR_NAME} \
-    && git checkout ${SIMULATOR_BRANCH} \
-    && ant build \
-    && chmod 777 ${RUN_SH}
+RUN sed -i -e "s|./classes|/app/${SIMULATOR_NAME}/classes|g" -e "s|lib/|/app/${SIMULATOR_NAME}/lib/|g" ${RUN_SH}
 
-COPY ${CONFIG_FILE} /simulator/${SIMULATOR_NAME}/${CONFIG_FILE}
+COPY /sims/${SIMULATOR_NAME}/is /simulator/is
 
-COPY sim_autoexecutor.sh /simulator/sim_autoexecutor.sh
+COPY /${CONFIG_TYPE}/${CONFIG_FILE} /simulator/${CONFIG_FILE}
+
+COPY /${CONFIG_TYPE}/sim_autoexecutor.sh /simulator/sim_autoexecutor.sh
 RUN chmod 777 /simulator/sim_autoexecutor.sh
 
-COPY crontab /etc/cron.d/crontab
+COPY /${CONFIG_TYPE}/crontab /etc/cron.d/crontab
 # RUN echo '*/5 * * * * /bin/bash /simulator/sim_autoexecutor.sh >> /simulator/cron.log 2>&1' > /etc/cron.d/crontab
 RUN chmod 0644 /etc/cron.d/crontab
 RUN /usr/bin/crontab /etc/cron.d/crontab
