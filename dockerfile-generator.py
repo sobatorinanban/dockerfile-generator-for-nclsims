@@ -6,13 +6,15 @@ import yaml
 
 ## initialization
 ccr_varied = False
-interest_order_changed = False
+predvnf_order_changed = False
 interest_sending_in_onestroke = False
+task_prioritize_changed = False
 sfc_vnf_num_varied = False
 is_nfs_mounted = False
 is_bind_mounted = False
 bind_mount_dir = ''
-interest_order_type = 'random'
+predvnf_order_mode = 'random'
+task_prioritize_mode = 'random'
 varied_ccr = []
 container_num = 1
 max_vnf_num = 20
@@ -76,10 +78,15 @@ if(simulator == 'ncl_icn-sfcsim'):
         if(is_change_interest_sending_method == 'y'):
             interest_sending_in_onestroke = True
 
-        is_change_interest_order = input('Do you want to change the interest sending order? (y/n):')
-        if(is_change_interest_order == 'y'):
-            interest_order_changed = True
-            interest_order_type = input('Which type of Interest sending order (random, workload, or blevel): ')
+            is_change_task_prioritize =input('Do you want to change the way task are prioritized? (y/n): ')
+            if(is_change_task_prioritize == 'y'):
+                task_prioritize_changed = True
+                task_prioritize_mode = input('Which type of prioritizing tasks (random, blevel, spr): ')
+
+        is_change_predvnf_order = input('Do you want to change the interest sending order? (y/n):')
+        if(is_change_predvnf_order == 'y'):
+            predvnf_order_changed = True
+            predvnf_order_mode = input('Which type of Interest sending order (random, workload, or blevel): ')
 
     if(ccr_varied == False):
         container_num = int(input('Number of containers: '))
@@ -126,10 +133,14 @@ for vnfnum in range(min_vnf_num, max_vnf_num+1, 5):
             config_type += str(i)
         if(sfc_vnf_num_varied):
             config_type = str(vnfnum) + 'vnfs' + "/" + config_type
+        if(predvnf_order_changed):
+            config_type = "predvnforder" + predvnf_order_mode + "/" + config_type
+        if(task_prioritize_changed):
+            config_type = "taskprior" + task_prioritize_mode + "/" + config_type
         if(interest_sending_in_onestroke):
-            config_type = "in-one-stroke" + "/" + config_type
-        if(interest_order_changed):
-            config_type = interest_order_type + "/" + config_type
+            config_type = "onestroke" + "/" + config_type
+        else:
+            config_type = "default" + "/" + config_type
 
         folderdir = exportbasedir + config_type + "/"
         if not os.path.isdir(folderdir):
@@ -160,17 +171,26 @@ for vnfnum in range(min_vnf_num, max_vnf_num+1, 5):
             data_lines_pr = data_lines_pr.replace('vnf_datasize_min=1', 'vnf_datasize_min=' + str(varied_ccr[i][1]))
             data_lines_pr = data_lines_pr.replace('vnf_datasize_max=1000', 'vnf_datasize_max=' +str(varied_ccr[i][2]))
             print('plot' + str(i) + "'s Average Datasize of VNF: " + str(varied_ccr[i][0]))
-        if(interest_order_changed):
-            mode = 0
-            if(interest_order_type == 'random'):
-                mode = 0
-            elif(interest_order_type == 'workload'):
-                mode = 1
-            elif(interest_order_type == 'blevel'):
-                mode = 2
-            data_lines_pr = data_lines_pr.replace('sfc_vnf_ordering_mode=0', 'sfc_vnf_ordering_mode=' + str(mode))
+        if(predvnf_order_changed):
+            ordermode = 0
+            if(predvnf_order_mode == 'random'):
+                ordermode = 0
+            elif(predvnf_order_mode == 'workload'):
+                ordermode = 1
+            elif(predvnf_order_mode == 'blevel'):
+                ordermode = 2
+            data_lines_pr = data_lines_pr.replace('sfc_predvnf_ordering_mode=0', 'sfc_predvnf_ordering_mode=' + str(ordermode))
         if(interest_sending_in_onestroke):
             data_lines_pr = data_lines_pr.replace('ccn_interests_sending_mode=0', 'ccn_interests_sending_mode=' + '1')
+        if(task_prioritize_changed):
+            priormode = 0
+            if(task_prioritize_mode == "random"):
+                priormode = 0
+            elif(task_prioritize_mode == "blevel"):
+                priormode = 1
+            elif(task_prioritize_mode == "spr"):
+                priormode = 2
+            data_lines_pr = data_lines_pr.replace('sfc_vnf_prioritize_mode=0', 'sfc_vnf_prioritize_mode=' + str(priormode))
         with open(folderdir + configfile, mode='w', encoding='utf-8', newline='\n') as writer:
             writer.write(data_lines_pr)
 
