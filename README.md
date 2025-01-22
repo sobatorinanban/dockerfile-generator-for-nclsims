@@ -1,22 +1,28 @@
 # dockerfile-generator-for-nclsims
-Dockerfile generator for simulator made by NCL (e.g. ncl_sfcsim) in repeated experiments.  
+Dockerfile generator for repeated experiments on NCL simulators (e.g. ncl_sfcsim).
 
 This program generates a Dockerfile for repeated experimentation with the simulator made by NCL.  
 I have not checked them all, but they probably work with most NCL simulators.  
 Checked simulators: ncl_sfcsim, ncl_icn-sfcsim.
 
 # How to use 
-### about files
+### About files
 - dockerfile-generator.py
-    - Main program
+    - **Main program**
 - ccnchanger.py
     - Used to vary CCN (Communication to Computation Ratio) in main program
 - Dockerfile
     - Dockerfile template for nclsims
+- Dockerfile.builder
+    - Dockerfile template for building nclsims
 - crontab
-    - Crontab configuration template for nclsims
+    - Crontab template for nclsims
 - sim_autoexecutor.sh 
-    - Script template for repeated experiments.
+    - Script template for repeated experiments
+
+### Required dependencies
+- python3
+- pyyaml
 
 ## Setting
 Before running the main program, a configuration file (such as `xxx.properties`) must be placed directly in the same location as the main program.  

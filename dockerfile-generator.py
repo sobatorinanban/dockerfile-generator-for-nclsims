@@ -96,6 +96,8 @@ else:
 
 
 ## check and make export dir
+print('')
+print('Notice: If you try to append the settings on additional runs, enter the same folder as the first time')
 foldername = input('Export folder name: ')
 exportbasedir = './' + foldername + '/'
 if not os.path.isdir(exportbasedir):
@@ -121,7 +123,12 @@ yaml_data = {
     }
 }
 
-# nvf roop
+## check if it is not the first runs
+if(os.path.isfile("docker-compose.yml")):
+    with open("docker-compose.yml", 'r') as existyml:
+        yaml_data = yaml.safe_load(existyml)
+
+# vnf roop
 for vnfnum in range(min_vnf_num, max_vnf_num+1, 5):
 
 
