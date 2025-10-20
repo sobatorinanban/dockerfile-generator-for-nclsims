@@ -9,6 +9,7 @@ ccr_varied = False
 predvnf_order_changed = False
 interest_sending_in_onestroke = False
 task_prioritize_changed = False
+task_duplicate_allocation = False
 sfc_vnf_num_varied = False
 is_nfs_mounted = False
 is_bind_mounted = False
@@ -82,6 +83,10 @@ if(simulator == 'ncl_icn-sfcsim'):
             if(is_change_task_prioritize == 'y'):
                 task_prioritize_changed = True
                 task_prioritize_mode = input('Which type of prioritizing tasks (random, blevel, spr): ')
+            
+            is_duplicate_task_allocation = input('Do you want to enable duplicate-based task allocation? (y/n): ')
+            if(is_duplicate_task_allocation == 'y'):
+                task_duplicate_allocation = True
 
         is_change_predvnf_order = input('Do you want to change the interest sending order? (y/n):')
         if(is_change_predvnf_order == 'y'):
@@ -145,7 +150,10 @@ for vnfnum in range(min_vnf_num, max_vnf_num+1, 5):
         if(task_prioritize_changed):
             config_type = "taskprior" + task_prioritize_mode + "/" + config_type
         if(interest_sending_in_onestroke):
-            config_type = "onestroke" + "/" + config_type
+            if(task_duplicate_allocation):
+                config_type = "onestroke-duplicate" + "/" + config_type
+            else:
+                config_type = "onestroke" + "/" + config_type
         else:
             config_type = "default" + "/" + config_type
 
@@ -189,6 +197,8 @@ for vnfnum in range(min_vnf_num, max_vnf_num+1, 5):
             data_lines_pr = data_lines_pr.replace('sfc_predvnf_ordering_mode=0', 'sfc_predvnf_ordering_mode=' + str(ordermode))
         if(interest_sending_in_onestroke):
             data_lines_pr = data_lines_pr.replace('ccn_interests_sending_mode=0', 'ccn_interests_sending_mode=' + '1')
+        if(task_duplicate_allocation):
+            data_lines_pr = data_lines_pr.replace('ccn_interests_duplicate_mode=0', 'ccn_interests_duplicate_mode=' + '1')
         if(task_prioritize_changed):
             priormode = 0
             if(task_prioritize_mode == "random"):
