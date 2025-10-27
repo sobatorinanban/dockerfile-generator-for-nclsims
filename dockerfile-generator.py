@@ -1,11 +1,12 @@
 import os
 import shutil
-import ccnchanger
+import ccrparams
 import yaml
 
 
 ## initialization
 ccr_varied = False
+ccr_fixed = False
 predvnf_order_changed = False
 interest_sending_in_onestroke = False
 task_prioritize_changed = False
@@ -16,10 +17,13 @@ is_bind_mounted = False
 bind_mount_dir = ''
 predvnf_order_mode = 'random'
 task_prioritize_mode = 'random'
-varied_ccr = []
+ccr_params = []
+target_time = -1.0
 container_num = 1
 max_vnf_num = 20
 min_vnf_num = 20
+max_workload = 3000
+min_workload = 10000
 
 
 print('--- Dockerfile generator for nclsims ---')
@@ -42,7 +46,7 @@ elif(backup_with_nfs == 'n'):
     backup_with_bind_mounting = input('Do you want to use Bind Mounting as a backup location for logs? (y/n): ')
     if(backup_with_bind_mounting == 'y'):
         print("    Notice: You will need to manually prepare a directory for Bind Mounting on the Docker host.")
-        bind_mount_dir = input('In which directory on the Docker host do you want to use as a Bind Mounting dir? (e.g. ./bind-mounting): ')
+        bind_mount_dir = input('    [Bindmount] In which directory on the Docker host do you want to use as a Bind Mounting dir? (e.g. ./bind-mounting): ')
         is_bind_mounted = True
 
 configfile = input('Which config file do you use (e.g. nfv.properties): ')
@@ -53,8 +57,8 @@ if(simulator == 'ncl_icn-sfcsim'):
     is_vnf_num_changing = input('Do you want to experiment with varing VNF nums? (y/n): ')
     if(is_vnf_num_changing == 'y'):
         sfc_vnf_num_varied = True
-        max_vnf_num = int(input('Maximum number of VNFs in SFC: '))
-        min_vnf_num = int(input('Minimum number of VNFs in SFC: '))
+        max_vnf_num = int(input('    [VNF] Maximum number of VNFs in SFC: '))
+        min_vnf_num = int(input('    [VNF] Minimum number of VNFs in SFC: '))
 
         # check and fix misstake
         if(min_vnf_num > max_vnf_num):
@@ -67,11 +71,20 @@ if(simulator == 'ncl_icn-sfcsim'):
         max_vnf_num = 20
         min_vnf_num = 20
 
-    is_ccn_changing = input('Do you want to experiment with varing CCN? (y/n): ')
-    if(is_ccn_changing == 'y'):
-        ccr_plotnum = int(input('Number of CCR plots: '))
-        varied_ccr = ccnchanger.ccn_chaner(int(ccr_plotnum))
-        ccr_varied = True
+    is_ccr_changing = input('Do you want to experiment with varing CCR? (y/n): ')
+    if(is_ccr_changing == 'y'):
+        is_ccr_fixed = input('    [CCR] Do you want to vary the CCR with the total time kept constant? (y/n)')
+        ccr_plotnum = int(input('    [CCR] Number of plots: '))
+        if(is_ccr_fixed == 'y'):
+            ccr_fixed = True
+            max_workload = int(input('    [CCR] Maximum number of Workload for baseline-time: '))
+            min_workload = int(input('    [CCR] Minimum number of Worklosd for baseline-time: '))
+            ccr_params, target_time = ccrparams.generate_ccr_params_fixed_time(ccr_plotnum, base_workload_min=min_workload, base_workload_max=max_workload)
+            print('    [CCR] baseline of total time = ' + str(target_time))
+            ccr_varied = True
+        else:
+            ccr_params = ccrparams.generate_ccr_params(ccr_plotnum)
+            ccr_varied = True
         container_num = ccr_plotnum + 1
 
     if(simulator == 'ncl_icn-sfcsim' or simulator == 'icn-sfcsim'):
@@ -82,7 +95,7 @@ if(simulator == 'ncl_icn-sfcsim'):
             is_change_task_prioritize =input('Do you want to change the way task are prioritized? (y/n): ')
             if(is_change_task_prioritize == 'y'):
                 task_prioritize_changed = True
-                task_prioritize_mode = input('Which type of prioritizing tasks (random, blevel, spr): ')
+                task_prioritize_mode = input('    [Prioritize] Which type of prioritizing tasks (random, blevel, spr): ')
             
             is_duplicate_task_allocation = input('Do you want to enable duplicate-based task allocation? (y/n): ')
             if(is_duplicate_task_allocation == 'y'):
@@ -91,7 +104,7 @@ if(simulator == 'ncl_icn-sfcsim'):
         is_change_predvnf_order = input('Do you want to change the interest sending order? (y/n):')
         if(is_change_predvnf_order == 'y'):
             predvnf_order_changed = True
-            predvnf_order_mode = input('Which type of Interest sending order (random, workload, or blevel): ')
+            predvnf_order_mode = input('    [Sending order] Which type of Interest sending order (random, workload, or blevel): ')
 
     if(ccr_varied == False):
         container_num = int(input('Number of containers: '))
@@ -183,9 +196,13 @@ for vnfnum in range(min_vnf_num, max_vnf_num+1, 5):
             data_lines_pr = data_lines_pr.replace('sfc_vnf_num_min=20', 'sfc_vnf_num_min=' + str(vnfnum))
             data_lines_pr = data_lines_pr.replace('sfc_vnf_num_max=20', 'sfc_vnf_num_max=' + str(vnfnum))
         if(ccr_varied):
-            data_lines_pr = data_lines_pr.replace('vnf_datasize_min=1', 'vnf_datasize_min=' + str(varied_ccr[i][1]))
-            data_lines_pr = data_lines_pr.replace('vnf_datasize_max=1000', 'vnf_datasize_max=' +str(varied_ccr[i][2]))
-            print('plot' + str(i) + "'s Average Datasize of VNF: " + str(varied_ccr[i][0]))
+            data_lines_pr = data_lines_pr.replace('vnf_datasize_min=1', 'vnf_datasize_min=' + str(ccr_params[i][0]))
+            data_lines_pr = data_lines_pr.replace('vnf_datasize_max=1000', 'vnf_datasize_max=' +str(ccr_params[i][1]))
+            print('plot' + str(i) + "'s minimium Datasize:" + str(ccr_params[i][0]) + ", maximum Datasize:" + str(ccr_params[i][1]))
+            if(ccr_fixed):
+                data_lines_pr = data_lines_pr.replace('vnf_weight_min=3000', 'vnf_weight_min=' + str(ccr_params[i][2]))
+                data_lines_pr = data_lines_pr.replace('vnf_weight_max=10000', 'vnf_weight_max=' +str(ccr_params[i][3]))
+                print('plot' + str(i) + "'s minimium Workload:" + str(ccr_params[i][2]) + ", maximum Workload:" + str(ccr_params[i][3]))
         if(predvnf_order_changed):
             ordermode = 0
             if(predvnf_order_mode == 'random'):
