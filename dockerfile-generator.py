@@ -176,6 +176,7 @@ for vnfnum in range(min_vnf_num, max_vnf_num+1, 5):
 
 
 
+        shutil.copytree("./data", folderdir + "data") # dataフォルダ(workflowなど)
         shutil.copy2(configfile, folderdir)
         shutil.copy2("./sim_autoexecutor.sh", folderdir)
         shutil.copy2("./crontab", folderdir)
