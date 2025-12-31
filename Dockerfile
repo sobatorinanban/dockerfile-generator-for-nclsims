@@ -15,7 +15,7 @@ RUN sed -i -e "s|./classes|/app/${SIMULATOR_NAME}/classes|g" -e "s|lib/|/app/${S
 
 COPY /sims/${SIMULATOR_NAME}/is /simulator/is
 
-COPY /${CONFIG_TYPE}/data/ /simulator/
+COPY /${CONFIG_TYPE}/data/ /simulator/data
 
 COPY /${CONFIG_TYPE}/${CONFIG_FILE} /simulator/${CONFIG_FILE}
 
