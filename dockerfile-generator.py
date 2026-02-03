@@ -11,6 +11,7 @@ predvnf_order_changed = False
 interest_sending_in_onestroke = False
 task_prioritize_changed = False
 task_duplicate_allocation = False
+task_duplicate_with_budget = False
 sfc_vnf_num_varied = False
 is_nfs_mounted = False
 is_bind_mounted = False
@@ -100,6 +101,9 @@ if(simulator == 'ncl_icn-sfcsim'):
             is_duplicate_task_allocation = input('Do you want to enable duplicate-based task allocation? (y/n): ')
             if(is_duplicate_task_allocation == 'y'):
                 task_duplicate_allocation = True
+            is_duplicate_with_budget = input('    [Duplicate] Do you want to limit duplicate-based allocation with budget? (y/n): ')
+            if(is_duplicate_with_budget == 'y'):
+                task_duplicate_with_budget = True
 
         is_change_predvnf_order = input('Do you want to change the interest sending order? (y/n):')
         if(is_change_predvnf_order == 'y'):
@@ -217,6 +221,8 @@ for vnfnum in range(min_vnf_num, max_vnf_num+1, 5):
             data_lines_pr = data_lines_pr.replace('ccn_interests_sending_mode=0', 'ccn_interests_sending_mode=' + '1')
         if(task_duplicate_allocation):
             data_lines_pr = data_lines_pr.replace('ccn_interests_duplicate_mode=0', 'ccn_interests_duplicate_mode=' + '1')
+        if(task_duplicate_with_budget):
+            data_lines_pr = data_lines_pr.replace('ccn_interests_duplicate_decision=0', 'ccn_interests_duplicate_decision=' + '1')
         if(task_prioritize_changed):
             priormode = 0
             if(task_prioritize_mode == "random"):
